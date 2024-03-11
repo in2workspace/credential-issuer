@@ -59,12 +59,10 @@ public class VerifiableCredentialController {
     )
     @PostMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    //public Mono<VerifiableCredentialResponseDTO> createVerifiableCredential(
-    public VerifiableCredentialDTO createVerifiableCredential(
+    public Mono<VerifiableCredentialResponseDTO> createVerifiableCredential(
             @RequestBody CredentialRequestDTO credentialRequest,
             ServerWebExchange exchange
     ) throws InvalidTokenException, ParseException {
-        /*
         return Mono.defer(() -> {
                     try {
                         SignedJWT token = Utils.getToken(exchange);
@@ -76,12 +74,6 @@ public class VerifiableCredentialController {
                     }
                 }).doOnNext(result -> log.info("VerifiableCredentialController - createVerifiableCredential()"))
                 .onErrorMap(e -> new RuntimeException("Error processing the request", e));
-         */
-        SignedJWT token = Utils.getToken(exchange);
-        String username = token.getJWTClaimsSet().getClaim("preferred_username").toString();
-        VerifiableCredentialResponseDTO verifiableCredentialResponseDTO = verifiableCredentialService.generateVerifiableCredentialResponse(username, credentialRequest, token.getParsedString()).block();
-
-        return verifiableCredentialResponseDTO.getCredentials().get(0);
     }
 
 

@@ -65,7 +65,6 @@ public class VerifiableCredentialServiceImpl implements VerifiableCredentialServ
         didElsi = appConfiguration.getIssuerDid();
     }
 
-
     @Override
     public Mono<VerifiableCredentialResponseDTO> generateVerifiableCredentialResponse(
             String username,
@@ -78,29 +77,25 @@ public class VerifiableCredentialServiceImpl implements VerifiableCredentialServ
                                 .then(Mono.fromRunnable(() -> cacheStore.delete(nonceClaim)))
                                 .thenReturn(nonceClaim)))
                 .flatMap(nonceClaim -> extractDidFromJwtProof(credentialRequestDTO.getProof().getJwt())
-                        .zipWith(generateVerifiableCredential(username, token, LEAR_CREDENTIAL, nonceClaim),
-                                (subjectDid, credential) -> {
-                                    String format = credentialRequestDTO.getFormat();
+                        .flatMap(subjectDid -> {
+                            String format = credentialRequestDTO.getFormat();
+                            Mono<VerifiableCredentialResponseDTO> credentialMono;
 
-                                    return generateVerifiableCredentialInCWTFormat(username, token, LEAR_CREDENTIAL, subjectDid)
-                                            .flatMap(credentialCWTFormat ->
-                                                    storeTokenInCache(token)
-                                                            .flatMap(cNonce -> storeCredentialResponseInMemoryCache(cNonce,credential)
-                                                                    .then(Mono.just(cNonce))
-                                                                    .flatMap(savedCNonce -> {
-                                                                        int cNonceExpiresIn = 600;
+                            if ("jwt_vc".equals(format)) {
+                                credentialMono = generateVerifiableCredential(username, token, LEAR_CREDENTIAL, nonceClaim)
+                                        .map(credential -> new VerifiableCredentialResponseDTO(format, credential, nonceClaim, 600));
+                            } else if ("cwt_vc".equals(format)) {
+                                credentialMono = generateVerifiableCredentialInCWTFormat(username, token, LEAR_CREDENTIAL, subjectDid)
+                                        .map(credential -> new VerifiableCredentialResponseDTO(format, credential, nonceClaim, 600));
+                            } else {
+                                return Mono.error(new IllegalArgumentException("Unsupported credential format: " + format));
+                            }
 
-                                                                        List<VerifiableCredentialDTO> credentialsList = new ArrayList<>();
-                                                                        credentialsList.add(new VerifiableCredentialDTO(format, credential, savedCNonce, cNonceExpiresIn));
-
-                                                                        return generateVerifiableCredentialInCWTFormat(username, token, LEAR_CREDENTIAL, subjectDid)
-                                                                                .map(credentialCWTFormatted -> {
-                                                                                    credentialsList.add(new VerifiableCredentialDTO("cwt_vc_json", credentialCWTFormatted, savedCNonce, cNonceExpiresIn));
-                                                                                    return new VerifiableCredentialResponseDTO(credentialsList);
-                                                                                });
-                                                                    })));
-                                }))
-                .flatMap(result -> result); // Unwrap one layer of Mono
+                            return storeTokenInCache(token)
+                                    .flatMap(cNonce -> storeCredentialResponseInMemoryCache(cNonce, String.valueOf(credentialMono))
+                                            .then(Mono.just(cNonce))
+                                            .flatMap(savedCNonce -> credentialMono));
+                        }));
     }
 
 
@@ -172,7 +167,7 @@ public class VerifiableCredentialServiceImpl implements VerifiableCredentialServ
 
                             return remoteSignatureService.sign(signatureRequest, token)
                                     .publishOn(Schedulers.boundedElastic())
-                                    .doOnSuccess(signedData -> commitCredentialSourceData(vcPayload, token).subscribe())
+                                    //.doOnSuccess(signedData -> commitCredentialSourceData(vcPayload, token).subscribe())
                                     .map(SignedData::getData);
 
 
