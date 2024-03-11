@@ -112,7 +112,7 @@ public class VerifiableCredentialServiceImpl implements VerifiableCredentialServ
             String subjectDid
     ){
         return Mono.defer(() -> {
-            try {
+            //try {
                 // Load walt.id SSI-Kit services from "$workingDirectory/service-matrix.properties"
                 new ServiceMatrix("service-matrix.properties");
 
@@ -127,7 +127,8 @@ public class VerifiableCredentialServiceImpl implements VerifiableCredentialServ
 
                 // Prepare desired custom data that should replace the default template data
                 log.info("Fetching information from authentic sources ...");
-                return authenticSourcesRemoteService.getUser(token)
+                //return authenticSourcesRemoteService.getUser(token)
+                return authenticSourcesRemoteService.getUserFromLocalFile()
                         .flatMap(appUser -> {
                             log.info("Getting credential subject data for credentialType: " + credentialType + " ...");
                             Map<String, Map<String, String>> credentialSubject = appUser.getCredentialSubjectData();
@@ -176,10 +177,10 @@ public class VerifiableCredentialServiceImpl implements VerifiableCredentialServ
 
 
                         });
-            } catch (UserDoesNotExistException e) {
-                log.error("UserDoesNotExistException {}", e.getMessage());
-                return Mono.error(new RuntimeException(e));
-            }
+            //} catch (UserDoesNotExistException e) {
+            //    log.error("UserDoesNotExistException {}", e.getMessage());
+            //    return Mono.error(new RuntimeException(e));
+            //}
         });
     }
 
@@ -190,7 +191,7 @@ public class VerifiableCredentialServiceImpl implements VerifiableCredentialServ
             String subjectDid
     ) {
         return Mono.defer(() -> {
-            try {
+            //try {
                 // Load walt.id SSI-Kit services from "$workingDirectory/service-matrix.properties"
                 new ServiceMatrix("service-matrix.properties");
 
@@ -205,7 +206,8 @@ public class VerifiableCredentialServiceImpl implements VerifiableCredentialServ
 
                 // Prepare desired custom data that should replace the default template data
                 log.info("Fetching information from authentic sources ...");
-                return authenticSourcesRemoteService.getUser(token)
+                //return authenticSourcesRemoteService.getUser(token)
+                return authenticSourcesRemoteService.getUserFromLocalFile()
                         .flatMap(appUser -> {
                             log.info("Getting credential subject data for credentialType: " + credentialType + " ...");
                             Map<String, Map<String, String>> credentialSubject = appUser.getCredentialSubjectData();
@@ -246,10 +248,10 @@ public class VerifiableCredentialServiceImpl implements VerifiableCredentialServ
                                     .flatMap(cbor -> generateCOSEBytesFromCBOR(cbor, token))
                                     .flatMap(this::compressAndConvertToBase45FromCOSE);
                         });
-            } catch (UserDoesNotExistException e) {
-                log.error("UserDoesNotExistException {}", e.getMessage());
-                return Mono.error(new RuntimeException(e));
-            }
+            //} catch (UserDoesNotExistException e) {
+            //    log.error("UserDoesNotExistException {}", e.getMessage());
+            //    return Mono.error(new RuntimeException(e));
+            //}
         });
     }
 

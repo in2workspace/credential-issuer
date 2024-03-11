@@ -8,6 +8,7 @@ import reactor.core.publisher.Mono;
 public interface AuthenticSourcesRemoteService {
 
     Mono<AuthenticSourcesGetUserResponseDTO> getUser(String token) throws UserDoesNotExistException;
+    Mono<AuthenticSourcesGetUserResponseDTO> getUserFromLocalFile();
 
     Mono<Void> commitCredentialSourceData(CommitCredentialDTO commitCredentialDTO, String token);
 }

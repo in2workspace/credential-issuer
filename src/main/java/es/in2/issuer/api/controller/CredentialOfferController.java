@@ -1,10 +1,12 @@
 package es.in2.issuer.api.controller;
 
 import es.in2.issuer.api.config.SwaggerConfig;
+import es.in2.issuer.api.model.dto.AuthenticSourcesGetUserResponseDTO;
 import es.in2.issuer.api.model.dto.CredentialOfferForPreAuthorizedCodeFlow;
 import es.in2.issuer.api.model.dto.CredentialResponseError;
 import es.in2.issuer.api.model.dto.GenericResponseError;
 import es.in2.issuer.api.exception.InvalidTokenException;
+import es.in2.issuer.api.service.AuthenticSourcesRemoteService;
 import es.in2.issuer.api.service.CredentialOfferService;
 import es.in2.issuer.api.util.Utils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,6 +33,7 @@ import reactor.core.publisher.Mono;
 public class CredentialOfferController {
 
     private final CredentialOfferService credentialOfferService;
+    private final AuthenticSourcesRemoteService authenticSourcesRemoteService;
 
     @Operation(
             summary = "Creates a credential offer",
@@ -167,6 +170,14 @@ public class CredentialOfferController {
     @ResponseStatus(HttpStatus.OK)
     public Mono<CredentialOfferForPreAuthorizedCodeFlow> getCredentialOffer(@PathVariable("id") String id) {
         return credentialOfferService.getCredentialOffer(id);
+    }
+
+    //test:
+    @GetMapping("/api/v2/test-user")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<AuthenticSourcesGetUserResponseDTO> test(ServerWebExchange request) {
+
+        return authenticSourcesRemoteService.getUserFromLocalFile();
     }
 
 

@@ -2,10 +2,7 @@ package es.in2.issuer.api.controller;
 
 import com.nimbusds.jwt.SignedJWT;
 import es.in2.issuer.api.config.SwaggerConfig;
-import es.in2.issuer.api.model.dto.CredentialRequestDTO;
-import es.in2.issuer.api.model.dto.CredentialResponseError;
-import es.in2.issuer.api.model.dto.GenericResponseError;
-import es.in2.issuer.api.model.dto.VerifiableCredentialResponseDTO;
+import es.in2.issuer.api.model.dto.*;
 import es.in2.issuer.api.exception.InvalidTokenException;
 import es.in2.issuer.api.service.VerifiableCredentialService;
 import es.in2.issuer.api.util.Utils;
@@ -62,10 +59,12 @@ public class VerifiableCredentialController {
     )
     @PostMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<VerifiableCredentialResponseDTO> createVerifiableCredential(
+    //public Mono<VerifiableCredentialResponseDTO> createVerifiableCredential(
+    public VerifiableCredentialDTO createVerifiableCredential(
             @RequestBody CredentialRequestDTO credentialRequest,
             ServerWebExchange exchange
-    ) {
+    ) throws InvalidTokenException, ParseException {
+        /*
         return Mono.defer(() -> {
                     try {
                         SignedJWT token = Utils.getToken(exchange);
@@ -77,6 +76,12 @@ public class VerifiableCredentialController {
                     }
                 }).doOnNext(result -> log.info("VerifiableCredentialController - createVerifiableCredential()"))
                 .onErrorMap(e -> new RuntimeException("Error processing the request", e));
+         */
+        SignedJWT token = Utils.getToken(exchange);
+        String username = token.getJWTClaimsSet().getClaim("preferred_username").toString();
+        VerifiableCredentialResponseDTO verifiableCredentialResponseDTO = verifiableCredentialService.generateVerifiableCredentialResponse(username, credentialRequest, token.getParsedString()).block();
+
+        return verifiableCredentialResponseDTO.getCredentials().get(0);
     }
 
 

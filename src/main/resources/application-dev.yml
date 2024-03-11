@@ -1,7 +1,7 @@
 app:
   configs:
-    iam-external-domain: http://localhost:8080
-    iam-internal-domain: http://localhost:8080
+    iam-external-domain: http://localhost:8088
+    iam-internal-domain: http://localhost:8088
     issuer-domain: http://localhost:8071
     authentic-sources-domain: http://localhost:8072
     key-vault-domain: http://localhost:8081
